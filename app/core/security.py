@@ -27,6 +27,20 @@ def approved_install_command(tool, system: str) -> list[str] | None:
     if manager == "apt": return [executable, "install", "-y", package]
     return [executable, "install", "--id", package, "--exact", "--accept-source-agreements", "--accept-package-agreements"]
 
+def approved_remove_command(tool, system: str) -> list[str] | None:
+    target = tool.platforms.get(system.lower(), {})
+    manager, package = target.get("manager"), target.get("package")
+    if not manager or not package or manager not in ALLOWED_MANAGERS or not shutil.which(ALLOWED_MANAGERS[manager][0]): return None
+    if manager == "apt": return ["apt-get", "remove", "-y", package]
+    return ["winget", "uninstall", "--id", package, "--exact"]
+
+def approved_update_command(tool, system: str) -> list[str] | None:
+    target = tool.platforms.get(system.lower(), {})
+    manager, package = target.get("manager"), target.get("package")
+    if not manager or not package or manager not in ALLOWED_MANAGERS or not shutil.which(ALLOWED_MANAGERS[manager][0]): return None
+    if manager == "apt": return ["apt-get", "install", "--only-upgrade", "-y", package]
+    return ["winget", "upgrade", "--id", package, "--exact", "--accept-source-agreements", "--accept-package-agreements"]
+
 def run_approved(command: list[str], timeout=900):
     if not command or command[0] not in {"apt-get","winget"}: raise ValueError("Command is not allowlisted")
     return subprocess.run(command, capture_output=True, text=True, timeout=timeout, check=False)

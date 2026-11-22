@@ -78,7 +78,7 @@ class MainWindow(QMainWindow):
         if row<0: QMessageBox.information(self,"Select a tool","Choose a tool first."); return
         t=self.registry.tools[row]
         if QMessageBox.question(self,"Confirm installation",f"Install {t.name} using the verified package manager?\nAdministrator permission may be required.") != QMessageBox.Yes: return
-        _ok,msg=self.operations.install(t); QMessageBox.information(self,"Installation result",msg); self.scan()
+        result=self.operations.install(t); QMessageBox.information(self,"Installation result",result.get("message", "Operation completed")); self.scan()
     def check_deps(self): self.dep.setPlainText(json.dumps(self.operations.check_dependencies(),indent=2)); self.card_labels[4].setText("OK")
     def export_diag(self):
         path,_=QFileDialog.getSaveFileName(self,"Export diagnostic report","diagnostic-report.json","JSON (*.json)");
