@@ -9,7 +9,7 @@ from PySide6.QtWidgets import *
 
 from app.core.diagnostics import collect
 
-BLUE="#2563eb"; NAVY="#101d40"
+CHARCOAL="#292929"; IVORY="#F5F2EC"; TAUPE="#A89B8C"
 class Worker(QThread):
     done=Signal(object)
     def __init__(self, fn): super().__init__(); self.fn=fn
@@ -38,7 +38,7 @@ class MainWindow(QMainWindow):
     def _dashboard(self):
         w=QWidget(); l=QVBoxLayout(w); hero=QLabel("👋  Welcome to eSim ToolMate!\nYour intelligent companion for managing eSim tools and dependencies."); hero.setObjectName("hero"); l.addWidget(hero)
         self.cards=QHBoxLayout(); l.addLayout(self.cards); self.card_labels=[]
-        for title,color in [("Total Tools",BLUE),("Installed","#16a34a"),("Missing","#f59e0b"),("Updates","#7c3aed"),("Dependencies","#10b981"),("Issues","#dc2626")]:
+        for title,color in [("Total Tools",TAUPE),("Installed",TAUPE),("Missing",TAUPE),("Updates",TAUPE),("Dependencies",TAUPE),("Issues",CHARCOAL)]:
             x=QFrame(); x.setObjectName("card"); q=QVBoxLayout(x); t=QLabel(title); n=QLabel("—"); n.setObjectName("metric"); q.addWidget(t); q.addWidget(n); x.setStyleSheet(f"QFrame#card{{border-top:4px solid {color};}}"); self.cards.addWidget(x); self.card_labels.append(n)
         row=QHBoxLayout(); l.addLayout(row,1); left=QGroupBox("Tool Status Overview"); ll=QVBoxLayout(left); self.status=QLabel(); ll.addWidget(self.status); row.addWidget(left,1); mid=QGroupBox("Quick Actions"); ql=QVBoxLayout(mid)
         for text,fn in [("⚡  Scan System",self.scan),("⇩  Install a Tool",lambda:self.show_page(2)),("⟳  Check for Updates",self.scan),("♣  Check Dependencies",self.check_deps),("▤  Generate Diagnostic Report",self.export_diag)]:
@@ -94,5 +94,5 @@ class MainWindow(QMainWindow):
             for c,v in enumerate([x['timestamp'],x['operation'],x['tool'],x['status'],x['message']]): self.logs.setItem(r,c,QTableWidgetItem(str(v)))
     def toggle_theme(self): self.dark=not self.dark; self.setStyleSheet(self._style())
     def _style(self):
-        bg="#0b1120" if self.dark else "#f5f7fb"; fg="#f8fafc" if self.dark else "#172033"; card="#172033" if self.dark else "#ffffff"; side="#111827" if self.dark else NAVY
-        return f"QWidget{{background:{bg};color:{fg};font-size:14px}} QFrame#sidebar{{background:{side}}} QLabel#brand{{font-size:20px;font-weight:700;padding:18px;color:white}} QPushButton#nav{{text-align:left;padding:12px;border:0;color:#e5e7eb;background:transparent;border-radius:8px}} QPushButton#nav:checked,QPushButton#nav:hover{{background:{BLUE};color:white}} QLineEdit,QTextEdit,QTableWidget,QListWidget,QGroupBox{{background:{card};border:1px solid #dbe3f0;border-radius:10px;padding:8px}} QPushButton{{background:{BLUE};color:white;border:0;border-radius:8px;padding:10px 14px}} QLabel#hero{{background:linear-gradient(90deg,#60a5fa,#1d4ed8);color:white;border-radius:12px;padding:26px;font-size:22px;font-weight:700}} QLabel#title{{font-size:26px;font-weight:700;padding:8px}} QLabel#metric{{font-size:28px;font-weight:700}}"
+        bg="#292929" if self.dark else "#F5F2EC"; fg="#F5F2EC" if self.dark else "#292929"; card="#292929" if self.dark else "#F5F2EC"; side="#292929" if self.dark else CHARCOAL
+        return f"QWidget{{background:{bg};color:{fg};font-size:14px}} QFrame#sidebar{{background:{side}}} QLabel#brand{{font-size:20px;font-weight:700;padding:18px;color:#F5F2EC}} QPushButton#nav{{text-align:left;padding:12px;border:0;color:#F5F2EC;background:transparent;border-radius:8px}} QPushButton#nav:checked,QPushButton#nav:hover{{background:{TAUPE};color:#F5F2EC}} QLineEdit,QTextEdit,QTableWidget,QListWidget,QGroupBox{{background:{card};border:1px solid #A89B8C;border-radius:10px;padding:8px}} QPushButton{{background:{TAUPE};color:#F5F2EC;border:0;border-radius:8px;padding:10px 14px}} QLabel#hero{{background:#292929;color:#F5F2EC;border-radius:12px;padding:26px;font-size:22px;font-weight:700}} QLabel#title{{font-size:26px;font-weight:700;padding:8px}} QLabel#metric{{font-size:28px;font-weight:700}}"
