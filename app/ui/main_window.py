@@ -9,7 +9,7 @@ from PySide6.QtWidgets import *
 
 from app.core.diagnostics import collect
 
-CHARCOAL="#292929"; IVORY="#F5F2EC"; TAUPE="#A89B8C"
+ROYAL_BLUE="#2563EB"; TEAL="#0F766E"; MAIN_BG="#F8FAFC"; CARD_BG="#FFFFFF"; BLUE_SURFACE="#EFF6FF"; AMBER="#F59E0B"; PRIMARY_TEXT="#1E293B"; SECONDARY_TEXT="#64748B"; BORDER="#E2E8F0"
 class Worker(QThread):
     done=Signal(object)
     def __init__(self, fn): super().__init__(); self.fn=fn
@@ -24,7 +24,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("eSim ToolMate — Intelligent Tool Manager"); self.resize(1450,900); self._build(); self.scan()
     def _build(self):
         self.setStyleSheet(self._style())
-        root=QWidget(); layout=QHBoxLayout(root); layout.setContentsMargins(0,0,0,0)
+        root=QWidget(); root.setObjectName("app-root"); layout=QHBoxLayout(root); layout.setContentsMargins(0,0,0,0)
         side=QFrame(); side.setObjectName("sidebar"); side.setFixedWidth(245); sl=QVBoxLayout(side)
         brand=QLabel("⚙  eSim ToolMate\n   Intelligent Tool Manager"); brand.setObjectName("brand"); sl.addWidget(brand); sl.addSpacing(18)
         self.nav=QButtonGroup(self); self.nav.setExclusive(True)
@@ -32,13 +32,13 @@ class MainWindow(QMainWindow):
             b=QPushButton(name); b.setCheckable(True); b.setObjectName("nav"); self.nav.addButton(b,i); sl.addWidget(b); b.clicked.connect(lambda _,x=i:self.show_page(x))
         sl.addStretch(); sl.addWidget(QLabel("FOSSEE\neSim Winter Internship 2026\n\nDetect. Install. Configure.\nUpdate. Verify.")); layout.addWidget(side)
         main=QWidget(); ml=QVBoxLayout(main); ml.setContentsMargins(18,16,18,14)
-        top=QHBoxLayout(); self.search=QLineEdit(); self.search.setPlaceholderText("⌕  Search tools… (Ctrl + K)"); self.search.textChanged.connect(self.filter_tools); top.addWidget(self.search,1); self.theme=QPushButton("☾  Theme"); self.theme.clicked.connect(self.toggle_theme); top.addWidget(self.theme); top.addWidget(QLabel(f"{platform.system()}  |  v1.0.0")); ml.addLayout(top)
+        top=QHBoxLayout(); self.search=QLineEdit(); self.search.setPlaceholderText("⌕  Search tools… (Ctrl + K)"); self.search.textChanged.connect(self.filter_tools); top.addWidget(self.search,1); self.theme=QPushButton("☼  Light theme"); self.theme.clicked.connect(self.toggle_theme); top.addWidget(self.theme); top.addWidget(QLabel(f"{platform.system()}  |  v1.0.0")); ml.addLayout(top)
         self.pages=QStackedWidget(); ml.addWidget(self.pages,1); layout.addWidget(main,1); self.setCentralWidget(root)
         self.dashboard=self._dashboard(); self.pages.addWidget(self.dashboard); self.tool_page=self._tool_page(); self.pages.addWidget(self.tool_page); self.install_page=self._install_page(); self.pages.addWidget(self.install_page); self.pages.addWidget(self._simple_page("Version & Updates", "Compare installed versions against trusted metadata.\nLatest-version checks are conservative and never invent a release.")); self.pages.addWidget(self._dependency_page()); self.pages.addWidget(self._simple_page("Configuration Manager", "Review detected executable paths and PATH entries.\nChanges are intentionally explicit and backed up before saving.")); self.pages.addWidget(self._diagnostics_page()); self.pages.addWidget(self._logs_page()); self.pages.addWidget(self._simple_page("Settings", "Theme and application data are stored in the platform application directory.")); self.pages.addWidget(self._simple_page("About", "eSim ToolMate 1.0.0\nA safe cross-platform tool manager for eSim workflows.")); self.nav.button(0).setChecked(True)
     def _dashboard(self):
         w=QWidget(); l=QVBoxLayout(w); hero=QLabel("👋  Welcome to eSim ToolMate!\nYour intelligent companion for managing eSim tools and dependencies."); hero.setObjectName("hero"); l.addWidget(hero)
         self.cards=QHBoxLayout(); l.addLayout(self.cards); self.card_labels=[]
-        for title,color in [("Total Tools",TAUPE),("Installed",TAUPE),("Missing",TAUPE),("Updates",TAUPE),("Dependencies",TAUPE),("Issues",CHARCOAL)]:
+        for title,color in [("Total Tools",ROYAL_BLUE),("Installed",TEAL),("Missing",AMBER),("Updates",ROYAL_BLUE),("Dependencies",TEAL),("Issues",AMBER)]:
             x=QFrame(); x.setObjectName("card"); q=QVBoxLayout(x); t=QLabel(title); n=QLabel("—"); n.setObjectName("metric"); q.addWidget(t); q.addWidget(n); x.setStyleSheet(f"QFrame#card{{border-top:4px solid {color};}}"); self.cards.addWidget(x); self.card_labels.append(n)
         row=QHBoxLayout(); l.addLayout(row,1); left=QGroupBox("Tool Status Overview"); ll=QVBoxLayout(left); self.status=QLabel(); ll.addWidget(self.status); row.addWidget(left,1); mid=QGroupBox("Quick Actions"); ql=QVBoxLayout(mid)
         for text,fn in [("⚡  Scan System",self.scan),("⇩  Install a Tool",lambda:self.show_page(2)),("⟳  Check for Updates",self.scan),("♣  Check Dependencies",self.check_deps),("▤  Generate Diagnostic Report",self.export_diag)]:
@@ -92,7 +92,35 @@ class MainWindow(QMainWindow):
         for x in rows:
             r=self.logs.rowCount(); self.logs.insertRow(r)
             for c,v in enumerate([x['timestamp'],x['operation'],x['tool'],x['status'],x['message']]): self.logs.setItem(r,c,QTableWidgetItem(str(v)))
-    def toggle_theme(self): self.dark=not self.dark; self.setStyleSheet(self._style())
+    def toggle_theme(self):
+        self.dark=not self.dark
+        self.theme.setText("☼  Blue-tint theme" if self.dark else "☼  Light theme")
+        self.setStyleSheet(self._style())
     def _style(self):
-        bg="#292929" if self.dark else "#F5F2EC"; fg="#F5F2EC" if self.dark else "#292929"; card="#292929" if self.dark else "#F5F2EC"; side="#292929" if self.dark else CHARCOAL
-        return f"QWidget{{background:{bg};color:{fg};font-size:14px}} QFrame#sidebar{{background:{side}}} QLabel#brand{{font-size:20px;font-weight:700;padding:18px;color:#F5F2EC}} QPushButton#nav{{text-align:left;padding:12px;border:0;color:#F5F2EC;background:transparent;border-radius:8px}} QPushButton#nav:checked,QPushButton#nav:hover{{background:{TAUPE};color:#F5F2EC}} QLineEdit,QTextEdit,QTableWidget,QListWidget,QGroupBox{{background:{card};border:1px solid #A89B8C;border-radius:10px;padding:8px}} QPushButton{{background:{TAUPE};color:#F5F2EC;border:0;border-radius:8px;padding:10px 14px}} QLabel#hero{{background:#292929;color:#F5F2EC;border-radius:12px;padding:26px;font-size:22px;font-weight:700}} QLabel#title{{font-size:26px;font-weight:700;padding:8px}} QLabel#metric{{font-size:28px;font-weight:700}}"
+        bg = BLUE_SURFACE if self.dark else MAIN_BG
+        return f"""
+        QWidget {{ color: {PRIMARY_TEXT}; font-family: 'Segoe UI', 'Inter', sans-serif; font-size: 14px; }}
+        QMainWindow, QWidget#app-root {{ background: {bg}; }}
+        QFrame#sidebar {{ background: {CARD_BG}; border-right: 1px solid {BORDER}; }}
+        QLabel#brand {{ font-size: 19px; font-weight: 700; padding: 18px; color: {PRIMARY_TEXT}; }}
+        QPushButton#nav {{ text-align: left; padding: 11px 12px; border: 1px solid transparent; color: {SECONDARY_TEXT}; background: transparent; border-radius: 9px; }}
+        QPushButton#nav:checked {{ background: {BLUE_SURFACE}; color: {ROYAL_BLUE}; border-color: #DBEAFE; font-weight: 700; }}
+        QPushButton#nav:hover {{ background: {BLUE_SURFACE}; color: {ROYAL_BLUE}; }}
+        QLineEdit, QTextEdit, QTableWidget, QListWidget {{ background: {CARD_BG}; border: 1px solid {BORDER}; border-radius: 9px; padding: 8px; selection-background-color: {BLUE_SURFACE}; selection-color: {PRIMARY_TEXT}; }}
+        QLineEdit:focus, QTextEdit:focus, QTableWidget:focus, QListWidget:focus {{ border: 2px solid {ROYAL_BLUE}; }}
+        QGroupBox {{ background: {CARD_BG}; border: 1px solid {BORDER}; border-radius: 12px; margin-top: 16px; padding: 15px 10px 10px; font-weight: 600; }}
+        QGroupBox::title {{ subcontrol-origin: margin; left: 12px; padding: 0 5px; color: {PRIMARY_TEXT}; }}
+        QPushButton {{ background: {ROYAL_BLUE}; color: #FFFFFF; border: 1px solid {ROYAL_BLUE}; border-radius: 8px; padding: 9px 13px; font-weight: 600; }}
+        QPushButton:hover {{ background: #1D4ED8; border-color: #1D4ED8; }}
+        QPushButton:pressed {{ background: #1E40AF; }}
+        QPushButton:disabled {{ background: #CBD5E1; border-color: #CBD5E1; color: #475569; }}
+        QHeaderView::section {{ background: #F1F5F9; color: {SECONDARY_TEXT}; border: 0; border-bottom: 1px solid {BORDER}; padding: 9px; font-weight: 700; }}
+        QTableWidget {{ gridline-color: {BORDER}; }}
+        QTableWidget::item {{ padding: 5px; }}
+        QTableWidget::item:selected, QListWidget::item:selected {{ background: {BLUE_SURFACE}; color: {PRIMARY_TEXT}; }}
+        QScrollBar:vertical {{ background: transparent; width: 10px; margin: 2px; }}
+        QScrollBar::handle:vertical {{ background: #CBD5E1; min-height: 26px; border-radius: 5px; }}
+        QLabel#hero {{ background: {BLUE_SURFACE}; color: {PRIMARY_TEXT}; border: 1px solid #DBEAFE; border-radius: 14px; padding: 23px; font-size: 20px; font-weight: 700; }}
+        QLabel#title {{ font-size: 25px; font-weight: 700; padding: 8px 2px; }}
+        QLabel#metric {{ font-size: 28px; font-weight: 700; color: {PRIMARY_TEXT}; }}
+        """

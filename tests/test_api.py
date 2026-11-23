@@ -15,6 +15,10 @@ def test_api_endpoints_and_configuration(tmp_path, monkeypatch):
     dashboard = client.get("/api/dashboard").json()
     assert dashboard["total"] == 6
     assert {"tools", "system", "dependency_summary"} <= dashboard.keys()
+    assert dashboard["updates"] is None
+    assert dashboard["update_state"].startswith("Unknown")
+    assert dashboard["dependencies"] == "No declared dependencies"
+    assert dashboard["dependency_summary"]["no_declared"] == 6
     assert client.get("/api/dependencies").json()["summary"]["total"] >= 0
     diagnostics = client.get("/api/diagnostics").json()
     assert {"operating_system", "architecture", "cpu_percent", "memory_used_percent", "tools", "warnings", "errors"} <= diagnostics.keys()
@@ -30,3 +34,9 @@ def test_api_endpoints_and_configuration(tmp_path, monkeypatch):
 def test_unknown_tool_is_rejected():
     client = TestClient(server.app)
     assert client.post("/api/tools/not-a-tool/verify").status_code == 404
+
+
+def test_install_operation_requires_explicit_approval():
+    client = TestClient(server.app, base_url="https://testserver")
+    assert client.post("/api/tools/ngspice/install").status_code == 422
+    assert client.post("/api/tools/ngspice/install", json={"approved": False}).status_code == 403
